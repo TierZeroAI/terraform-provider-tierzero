@@ -56,7 +56,7 @@ func (p *TierZeroProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Sensitive:   true,
 			},
 			"base_url": schema.StringAttribute{
-				Description: "TierZero API base URL. Defaults to https://api.tierzero.com",
+				Description: "TierZero API base URL. Defaults to https://api.tierzero.ai",
 				Optional:    true,
 			},
 		},
@@ -87,7 +87,7 @@ func (p *TierZeroProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	// Get base URL from config or use default
-	baseURL := "https://api.tierzero.com"
+	baseURL := "https://api.tierzero.ai"
 	if !config.BaseURL.IsNull() {
 		baseURL = config.BaseURL.ValueString()
 	}

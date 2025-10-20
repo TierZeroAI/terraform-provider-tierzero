@@ -1,3 +1,6 @@
+# Makefile for local development and testing
+# This is NOT used for releases or distribution
+
 default: build
 
 .PHONY: build

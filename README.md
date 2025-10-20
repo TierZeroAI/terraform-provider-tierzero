@@ -120,13 +120,6 @@ go test ./...
 TF_ACC=1 go test ./... -v
 ```
 
-## Documentation
-
-- [Provider Documentation](./docs/index.md)
-- [Alert Responder Resource](./docs/resources/alert_responder.md)
-- [Webhook Subscriptions Data Source](./docs/data-sources/webhook_subscriptions.md)
-- [Notification Integrations Data Source](./docs/data-sources/notification_integrations.md)
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or pull request.
@@ -139,4 +132,4 @@ This provider is licensed under the Mozilla Public License 2.0. See [LICENSE](./
 
 For issues and questions:
 - GitHub Issues: https://github.com/tierzero/terraform-provider-tierzero/issues
-- TierZero Documentation: https://docs.tierzero.com
+- TierZero Documentation: https://docs.tierzero.ai

@@ -1,3 +1,15 @@
+terraform {
+  required_providers {
+    tierzero = {
+      source = "tierzero/tierzero"
+    }
+  }
+}
+
+provider "tierzero" {
+  # API key from TIERZERO_API_KEY environment variable
+}
+
 # Fetch all notification integrations
 data "tierzero_notification_integrations" "all" {}
 
@@ -25,12 +37,12 @@ resource "tierzero_alert_responder" "with_notifications" {
   team_name = "Production"
   name      = "Alert with Notifications"
 
-  webhook_sources {
+  webhook_sources = [{
     type      = "PAGERDUTY"
     remote_id = "PXXXXXX"
-  }
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["critical"]
   }
 

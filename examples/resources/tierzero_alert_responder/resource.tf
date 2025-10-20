@@ -1,14 +1,27 @@
+terraform {
+  required_providers {
+    tierzero = {
+      source = "tierzero/tierzero"
+    }
+  }
+}
+
+provider "tierzero" {
+  # API key from TIERZERO_API_KEY environment variable
+  # base_url defaults to https://api.tierzero.ai
+}
+
 # Basic alert responder example
 resource "tierzero_alert_responder" "production_critical" {
-  team_name = "Production"
+  team_name = "Default"
   name      = "Production Critical Errors"
 
-  webhook_sources {
-    type      = "PAGERDUTY"
-    remote_id = "PXXXXXX"
-  }
+  webhook_sources = [{
+    type      = "OPSGENIE"
+    remote_id = "2347f136-321e-4394-98a7-b1b91aa77b9b 9494abcc-fbc8-4e5e-aed9-52d49465b5a5"  # Replace with actual Opsgenie webhook ID
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["critical", "fatal", "emergency"]
   }
 
@@ -17,19 +30,19 @@ resource "tierzero_alert_responder" "production_critical" {
 
 # Advanced example with runbook and notifications
 resource "tierzero_alert_responder" "automated_handler" {
-  team_name = "Production"
+  team_name = "Default"
   name      = "Automated Critical Alert Handler"
 
-  webhook_sources {
-    type      = "PAGERDUTY"
-    remote_id = "PXXXXXX"
-  }
+  webhook_sources = [{
+    type      = "OPSGENIE"
+    remote_id = "2347f136-321e-4394-98a7-b1b91aa77b9b 9494abcc-fbc8-4e5e-aed9-52d49465b5a5"  # Replace with actual Opsgenie webhook ID
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["critical", "p1", "sev1"]
   }
 
-  runbook {
+  runbook = {
     prompt = <<-EOT
       Investigate this critical alert:
       1. Check recent deployments
@@ -57,28 +70,28 @@ data "tierzero_notification_integrations" "slack" {
 }
 
 locals {
-  pagerduty_webhook = [
+  opsgenie_webhook = [
     for ws in data.tierzero_webhook_subscriptions.available.webhook_subscriptions :
-    ws if ws.type == "PAGERDUTY"
+    ws if ws.type == "OPSGENIE"
   ][0]
 }
 
 resource "tierzero_alert_responder" "discovered" {
-  team_name = "Production"
+  team_name = "Default"
   name      = "Alert Handler with Discovery"
 
-  webhook_sources {
-    type      = local.pagerduty_webhook.type
-    remote_id = local.pagerduty_webhook.remote_id
-  }
+  webhook_sources = [{
+    type      = local.opsgenie_webhook.type
+    remote_id = local.opsgenie_webhook.remote_id
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["error", "warning"]
   }
 
-  notification_integration_ids = [
+  notification_integration_ids = length(data.tierzero_notification_integrations.slack.notification_integrations) > 0 ? [
     data.tierzero_notification_integrations.slack.notification_integrations[0].id
-  ]
+  ] : []
 
   enabled = true
 }

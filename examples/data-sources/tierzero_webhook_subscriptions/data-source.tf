@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    tierzero = {
+      source = "tierzero/tierzero"
+    }
+  }
+}
+
+provider "tierzero" {
+  # API key from TIERZERO_API_KEY environment variable
+  # base_url defaults to https://api.tierzero.ai
+}
+
 # Fetch all available webhook subscriptions
 data "tierzero_webhook_subscriptions" "all" {}
 
@@ -19,12 +32,12 @@ resource "tierzero_alert_responder" "example" {
   team_name = "Production"
   name      = "Example Alert"
 
-  webhook_sources {
+  webhook_sources = [{
     type      = data.tierzero_webhook_subscriptions.all.webhook_subscriptions[0].type
     remote_id = data.tierzero_webhook_subscriptions.all.webhook_subscriptions[0].remote_id
-  }
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["error"]
   }
 }
