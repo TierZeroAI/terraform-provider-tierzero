@@ -18,7 +18,7 @@ resource "tierzero_alert_responder" "production_critical" {
 
   webhook_sources = [{
     type      = "OPSGENIE"
-    remote_id = "2347f136-321e-4394-98a7-b1b91aa77b9b 9494abcc-fbc8-4e5e-aed9-52d49465b5a5"  # Replace with actual Opsgenie webhook ID
+    remote_id = "your-opsgenie-webhook-id"  # Replace with actual Opsgenie webhook ID
   }]
 
   matching_criteria = {
@@ -35,7 +35,7 @@ resource "tierzero_alert_responder" "automated_handler" {
 
   webhook_sources = [{
     type      = "OPSGENIE"
-    remote_id = "2347f136-321e-4394-98a7-b1b91aa77b9b 9494abcc-fbc8-4e5e-aed9-52d49465b5a5"  # Replace with actual Opsgenie webhook ID
+    remote_id = "your-opsgenie-webhook-id"  # Replace with actual Opsgenie webhook ID
   }]
 
   matching_criteria = {
