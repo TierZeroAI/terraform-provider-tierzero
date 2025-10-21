@@ -34,7 +34,7 @@ For more runbook examples, see the [TierZero Prompt Library](https://docs.tierze
 terraform {
   required_providers {
     tierzero = {
-      source = "tierzero/tierzero"
+      source = "tierzeroai/tierzero"
     }
   }
 }

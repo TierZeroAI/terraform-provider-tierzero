@@ -39,7 +39,7 @@ The API key can be provided in two ways:
 terraform {
   required_providers {
     tierzero = {
-      source = "tierzero/tierzero"
+      source = "tierzeroai/tierzero"
     }
   }
 }
