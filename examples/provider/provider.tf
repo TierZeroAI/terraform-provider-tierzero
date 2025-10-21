@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     tierzero = {
-      source = "tierzero/tierzero"
+      source = "tierzeroai/tierzero"
     }
   }
 }

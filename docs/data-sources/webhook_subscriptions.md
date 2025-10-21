@@ -16,7 +16,7 @@ Fetches available webhook subscriptions for the organization. Use this to discov
 terraform {
   required_providers {
     tierzero = {
-      source = "tierzero/tierzero"
+      source = "tierzeroai/tierzero"
     }
   }
 }

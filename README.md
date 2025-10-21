@@ -17,7 +17,7 @@ Add the following to your Terraform configuration:
 terraform {
   required_providers {
     tierzero = {
-      source  = "tierzero/tierzero"
+      source  = "tierzeroai/tierzero"
       version = "~> 1.0"
     }
   }
@@ -102,7 +102,7 @@ go build -o terraform-provider-tierzero
    ```hcl
    provider_installation {
      dev_overrides {
-       "tierzero/tierzero" = "/path/to/terraform-provider-tierzero"
+       "tierzeroai/tierzero" = "/path/to/terraform-provider-tierzero"
      }
      direct {}
    }

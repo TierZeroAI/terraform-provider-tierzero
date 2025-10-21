@@ -16,7 +16,7 @@ Fetches available notification integrations for the organization. Use this to di
 terraform {
   required_providers {
     tierzero = {
-      source = "tierzero/tierzero"
+      source = "tierzeroai/tierzero"
     }
   }
 }
