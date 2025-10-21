@@ -526,9 +526,13 @@ func buildRunbook(rb *runbookModel) *client.Runbook {
 }
 
 func buildStringList(list []types.String) []string {
-	result := make([]string, len(list))
-	for i, s := range list {
-		result[i] = s.ValueString()
+	result := make([]string, 0, len(list))
+	for _, s := range list {
+		// Skip unknown or null values to prevent panics during planning
+		if s.IsNull() || s.IsUnknown() {
+			continue
+		}
+		result = append(result, s.ValueString())
 	}
 	return result
 }
