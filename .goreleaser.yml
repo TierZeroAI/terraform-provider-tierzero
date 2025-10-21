@@ -74,7 +74,7 @@ signs:
 release:
   # GitHub release settings
   github:
-    owner: tierzero
+    owner: TierZeroAI
     name: terraform-provider-tierzero
 
   # Draft release first to allow manual review before publishing
@@ -87,10 +87,10 @@ release:
   header: |
     ## TierZero Terraform Provider {{ .Tag }}
 
-    See the [CHANGELOG](https://github.com/tierzero/terraform-provider-tierzero/blob/main/CHANGELOG.md) for detailed changes.
+    See the [CHANGELOG](https://github.com/TierZeroAI/terraform-provider-tierzero/blob/main/CHANGELOG.md) for detailed changes.
 
   footer: |
-    **Full Changelog**: https://github.com/tierzero/terraform-provider-tierzero/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/TierZeroAI/terraform-provider-tierzero/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     ## Installation
 
