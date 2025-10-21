@@ -614,6 +614,9 @@ func matchingCriteriaChanged(plan, state *matchingCriteriaModel) bool {
 			return true
 		}
 	}
+	if !plan.SlackBotAppUserID.Equal(state.SlackBotAppUserID) {
+		return true
+	}
 	return false
 }
 
