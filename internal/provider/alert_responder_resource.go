@@ -206,7 +206,7 @@ func (r *alertResponderResource) Create(ctx context.Context, req resource.Create
 
 	// Validate that either webhook_sources OR slack_channel_id is provided (not both, not neither)
 	hasWebhookSources := len(plan.WebhookSources) > 0
-	hasSlackChannelID := !plan.SlackChannelID.IsNull() && plan.SlackChannelID.ValueString() != ""
+	hasSlackChannelID := !plan.SlackChannelID.IsNull() && !plan.SlackChannelID.IsUnknown() && plan.SlackChannelID.ValueString() != ""
 
 	if !hasWebhookSources && !hasSlackChannelID {
 		resp.Diagnostics.AddError(
@@ -359,7 +359,7 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 
 	// Validate that either webhook_sources OR slack_channel_id is provided (not both, not neither)
 	hasWebhookSources := len(plan.WebhookSources) > 0
-	hasSlackChannelID := !plan.SlackChannelID.IsNull() && plan.SlackChannelID.ValueString() != ""
+	hasSlackChannelID := !plan.SlackChannelID.IsNull() && !plan.SlackChannelID.IsUnknown() && plan.SlackChannelID.ValueString() != ""
 
 	if !hasWebhookSources && !hasSlackChannelID {
 		resp.Diagnostics.AddError(
@@ -508,7 +508,7 @@ func buildMatchingCriteria(mc *matchingCriteriaModel) *client.MatchingCriteria {
 	result := &client.MatchingCriteria{
 		TextMatches: buildStringList(mc.TextMatches),
 	}
-	if !mc.SlackBotAppUserID.IsNull() && mc.SlackBotAppUserID.ValueString() != "" {
+	if !mc.SlackBotAppUserID.IsNull() && !mc.SlackBotAppUserID.IsUnknown() && mc.SlackBotAppUserID.ValueString() != "" {
 		slackBotAppUserID := mc.SlackBotAppUserID.ValueString()
 		result.SlackBotAppUserID = &slackBotAppUserID
 	}
