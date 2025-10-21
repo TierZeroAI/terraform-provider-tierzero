@@ -17,12 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **BREAKING**: `webhook_sources` is now optional instead of required in `tierzero_alert_responder` resource
-- **BREAKING**: `team_name` field in `tierzero_alert_responder` now requires resource replacement when changed (was incorrectly allowing in-place updates)
+- **BREAKING**: `team_name`, `webhook_sources`, and `slack_channel_id` fields in `tierzero_alert_responder` now require resource replacement when changed (API does not support switching alert types or changing team)
 - Removed `SLACK` from webhook subscription types documentation (Slack channels use `slack_channel_id`, not webhook subscriptions)
 - Updated runbook examples to use real-world API 500 error investigation scenario from TierZero prompt library
 
 ### Fixed
-- Fixed perpetual diff issue with `team_name` changes by marking it as ForceNew (RequiresReplace)
+- Fixed perpetual diff issue with `team_name`, `webhook_sources`, and `slack_channel_id` changes by marking them as ForceNew (RequiresReplace)
+- Fixed `matchingCriteriaChanged` helper function to check for changes to `slack_bot_app_user_id` field
 - Clarified that webhook subscriptions data source only returns external providers (PagerDuty, OpsGenie, FireHydrant, Rootly)
 
 ## [0.0.3] - 2025-10-21

@@ -175,8 +175,8 @@ resource "tierzero_alert_responder" "discovered" {
 
 ### Optional
 
-- `webhook_sources` (Attributes List) Webhook sources to monitor (for PagerDuty, OpsGenie, FireHydrant, Rootly). Mutually exclusive with slack_channel_id. (see [below for nested schema](#nestedatt--webhook_sources))
-- `slack_channel_id` (String) Slack channel ID (e.g., 'C01234567' for public channels, 'G01234567' for private channels). Mutually exclusive with webhook_sources.
+- `webhook_sources` (Attributes List) Webhook sources to monitor (for PagerDuty, OpsGenie, FireHydrant, Rootly). Mutually exclusive with `slack_channel_id`. (see [below for nested schema](#nestedatt--webhook_sources))
+- `slack_channel_id` (String) Slack channel ID (e.g., 'C01234567' for public channels, 'G01234567' for private channels). Mutually exclusive with `webhook_sources`.
 - `enabled` (Boolean) Whether the alert responder is enabled. When true, status is ACTIVE. When false, status is PAUSED. Uses enable/disable API endpoints under the hood.
 - `notification_integration_ids` (List of String) Notification integration Global IDs
 - `runbook` (Attributes) Investigation runbook (optional, uses default if not provided) (see [below for nested schema](#nestedatt--runbook))

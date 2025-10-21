@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -93,8 +94,11 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Required:    true,
 			},
 			"webhook_sources": schema.ListNestedAttribute{
-				Description: "Webhook sources to monitor (for PagerDuty, OpsGenie, FireHydrant, Rootly). Mutually exclusive with slack_channel_id.",
+				Description: "Webhook sources to monitor (for PagerDuty, OpsGenie, FireHydrant, Rootly). Mutually exclusive with slack_channel_id. Changing this field requires resource replacement.",
 				Optional:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
@@ -112,8 +116,11 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 				},
 			},
 			"slack_channel_id": schema.StringAttribute{
-				Description: "Slack channel ID (e.g., 'C01234567' for public channels, 'G01234567' for private channels). Mutually exclusive with webhook_sources.",
+				Description: "Slack channel ID (e.g., 'C01234567' for public channels, 'G01234567' for private channels). Mutually exclusive with webhook_sources. Changing this field requires resource replacement.",
 				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"matching_criteria": schema.SingleNestedAttribute{
 				Description: "Criteria for matching alerts",
@@ -394,10 +401,8 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Check if other fields changed
-	// Note: team_name is not included because it has RequiresReplace() plan modifier
+	// Note: team_name, webhook_sources, and slack_channel_id are not included because they have RequiresReplace() plan modifiers
 	needsUpdate := !plan.Name.Equal(state.Name) ||
-		webhookSourcesChanged(plan.WebhookSources, state.WebhookSources) ||
-		!plan.SlackChannelID.Equal(state.SlackChannelID) ||
 		matchingCriteriaChanged(plan.MatchingCriteria, state.MatchingCriteria) ||
 		runbookChanged(plan.Runbook, state.Runbook) ||
 		notificationIDsChanged(plan.NotificationIntegrationIDs, state.NotificationIntegrationIDs)
@@ -409,17 +414,6 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 		if !plan.Name.Equal(state.Name) {
 			name := plan.Name.ValueString()
 			updateReq.Name = &name
-		}
-
-		if webhookSourcesChanged(plan.WebhookSources, state.WebhookSources) {
-			updateReq.WebhookSources = buildWebhookSources(plan.WebhookSources)
-		}
-
-		if !plan.SlackChannelID.Equal(state.SlackChannelID) {
-			if !plan.SlackChannelID.IsNull() && plan.SlackChannelID.ValueString() != "" {
-				slackChannelID := plan.SlackChannelID.ValueString()
-				updateReq.SlackChannelID = &slackChannelID
-			}
 		}
 
 		if matchingCriteriaChanged(plan.MatchingCriteria, state.MatchingCriteria) {
