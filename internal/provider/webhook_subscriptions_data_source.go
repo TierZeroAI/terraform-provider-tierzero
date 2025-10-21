@@ -53,7 +53,7 @@ func (d *webhookSubscriptionsDataSource) Schema(_ context.Context, _ datasource.
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
-							Description: "Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY, SLACK)",
+							Description: "Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY)",
 							Computed:    true,
 						},
 						"remote_id": schema.StringAttribute{

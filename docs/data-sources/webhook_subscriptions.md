@@ -72,4 +72,4 @@ Read-Only:
 
 - `name` (String) Human-readable name
 - `remote_id` (String) External webhook ID
-- `type` (String) Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY, SLACK)
+- `type` (String) Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY)

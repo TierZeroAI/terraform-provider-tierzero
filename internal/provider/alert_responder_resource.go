@@ -84,6 +84,9 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"team_name": schema.StringAttribute{
 				Description: "Team name",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Alert responder name",
@@ -391,8 +394,8 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Check if other fields changed
+	// Note: team_name is not included because it has RequiresReplace() plan modifier
 	needsUpdate := !plan.Name.Equal(state.Name) ||
-		!plan.TeamName.Equal(state.TeamName) ||
 		webhookSourcesChanged(plan.WebhookSources, state.WebhookSources) ||
 		!plan.SlackChannelID.Equal(state.SlackChannelID) ||
 		matchingCriteriaChanged(plan.MatchingCriteria, state.MatchingCriteria) ||

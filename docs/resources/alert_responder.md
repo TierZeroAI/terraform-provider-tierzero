@@ -78,6 +78,7 @@ resource "tierzero_alert_responder" "slack_database_alerts" {
 }
 
 # Slack alert responder with bot filter
+# Runbook is optional - if not specified, uses the default investigation prompt
 resource "tierzero_alert_responder" "slack_datadog_alerts" {
   team_name = "Default"
   name      = "Slack Datadog Alerts"
@@ -85,42 +86,38 @@ resource "tierzero_alert_responder" "slack_datadog_alerts" {
   slack_channel_id = "C07TUN1EFFU"
 
   matching_criteria = {
-    text_matches         = ["alert", "warning"]
+    text_matches          = ["alert", "warning"]
     slack_bot_app_user_id = "B01234567"  # Optional: filter by bot/sender app user ID
-  }
-
-  runbook = {
-    prompt = "Investigate this Datadog alert and provide root cause analysis"
   }
 
   enabled = true
 }
 
-# Advanced example with runbook and notifications
-resource "tierzero_alert_responder" "automated_handler" {
+# Advanced example with custom runbook and notifications
+# For more runbook examples, see: https://docs.tierzero.ai/prompt-library/alert-responder
+resource "tierzero_alert_responder" "api_500_errors" {
   team_name = "Default"
-  name      = "Automated Critical Alert Handler"
+  name      = "API 500 Error Handler"
 
   webhook_sources = [{
     type      = "OPSGENIE"
-    remote_id = "your-opsgenie-webhook-id"  # Replace with actual Opsgenie webhook ID
+    remote_id = "your-opsgenie-webhook-id"  # Replace with actual OpsGenie webhook ID
   }]
 
   matching_criteria = {
-    text_matches = ["critical", "p1", "sev1"]
+    text_matches = ["500", "error", "api"]
   }
 
   runbook = {
     prompt = <<-EOT
-      Investigate this critical alert:
-      1. Check recent deployments
-      2. Review error rates and patterns
-      3. Identify affected services
-      4. Provide root cause analysis
-      5. Suggest remediation steps
+      API requests are returning 500 errors. Investigate following these steps:
+      1. Execute a spans query filtering for env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and group by @usr.id to quantify affected users
+      2. Perform separate spans aggregations to determine impacted accounts (facet on @usr.accountId) and users
+      3. Collect and examine at least 5 trace IDs with 500 errors, investigate each trace with error status filtering
+      4. If an error stack trace is identified with a version/git hash, investigate commits from up to 3 days prior. Flag potentially related commits as investigation leads
     EOT
 
-    fast_prompt = "Quick impact assessment: determine severity, affected users, and business impact"
+    fast_prompt = "Determine how many users were affected by the 500 errors. Use spans aggregation query with filter: env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and facet on @usr.id"
   }
 
   notification_integration_ids = [
