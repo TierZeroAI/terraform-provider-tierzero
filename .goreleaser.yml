@@ -94,7 +94,7 @@ release:
 
     ## Installation
 
-    This release is automatically published to the [Terraform Registry](https://registry.terraform.io/providers/TierZeroAI/tierzero).
+    This release is automatically published to the [Terraform Registry](https://registry.terraform.io/providers/tierzero/tierzero).
 
     To use this provider, add the following to your Terraform configuration:
 
