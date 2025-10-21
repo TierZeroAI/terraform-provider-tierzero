@@ -9,8 +9,8 @@ build:
 
 .PHONY: install
 install: build
-	mkdir -p ~/.terraform.d/plugins/registry.terraform.io/tierzero/tierzero/1.0.0/darwin_arm64
-	cp terraform-provider-tierzero ~/.terraform.d/plugins/registry.terraform.io/tierzero/tierzero/1.0.0/darwin_arm64/
+	mkdir -p ~/.terraform.d/plugins/registry.terraform.io/tierzeroai/tierzero/1.0.0/darwin_arm64
+	cp terraform-provider-tierzero ~/.terraform.d/plugins/registry.terraform.io/tierzeroai/tierzero/1.0.0/darwin_arm64/
 
 .PHONY: test
 test:
