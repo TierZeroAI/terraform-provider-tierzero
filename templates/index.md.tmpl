@@ -1,0 +1,81 @@
+---
+page_title: "tierzero Provider"
+description: |-
+  Terraform provider for managing TierZero Alert Responders and related resources.
+---
+
+# TierZero Provider
+
+The TierZero Terraform Provider allows you to manage [TierZero](https://tierzero.ai) Alert Responders using Infrastructure as Code. Alert responders are automated systems that investigate incoming alerts from monitoring platforms using TierZero's AI agent to analyze alerts matching specified criteria.
+
+## Key Features
+
+- **Alert Responder Management**: Create, update, and manage alert responders that automatically investigate alerts from PagerDuty, Opsgenie, FireHydrant, Rootly, and Slack
+- **Discovery Data Sources**: List available webhook subscriptions and notification integrations in your organization
+- **Automated Investigation**: Configure custom runbooks with investigation prompts and fast triage directives
+- **Notification Integration**: Send investigation results to Discord or Slack channels
+
+## Authentication
+
+The provider requires a TierZero Organization API Key. You can obtain one from the TierZero dashboard at [https://app.tierzero.ai](https://app.tierzero.ai).
+
+The API key can be provided in two ways:
+
+1. **Environment Variable** (recommended for security):
+   ```bash
+   export TIERZERO_API_KEY="your-api-key-here"
+   ```
+
+2. **Provider Configuration**:
+   ```terraform
+   provider "tierzero" {
+     api_key = "your-api-key-here"
+   }
+   ```
+
+## Example Usage
+
+{{tffile "examples/provider/provider.tf"}}
+
+## Discovery Workflow
+
+Before creating alert responders, use the discovery data sources to find available webhook subscriptions and notification integrations:
+
+```terraform
+# Discover available webhook subscriptions
+data "tierzero_webhook_subscriptions" "available" {}
+
+# Discover Slack notification integrations
+data "tierzero_notification_integrations" "slack" {
+  kind = "SLACK_ALERT"
+}
+
+# Use discovered resources
+resource "tierzero_alert_responder" "example" {
+  team_name = "Default"
+  name      = "Production Alerts"
+
+  webhook_sources = [{
+    type      = data.tierzero_webhook_subscriptions.available.webhook_subscriptions[0].type
+    remote_id = data.tierzero_webhook_subscriptions.available.webhook_subscriptions[0].remote_id
+  }]
+
+  matching_criteria = {
+    text_matches = ["critical", "error"]
+  }
+
+  notification_integration_ids = [
+    data.tierzero_notification_integrations.slack.notification_integrations[0].id
+  ]
+
+  enabled = true
+}
+```
+
+## Important Behaviors
+
+- **Idempotency**: Creating an alert responder with a duplicate name for the same team returns the existing responder rather than creating a new one
+- **Global IDs**: Resources are identified using opaque string identifiers (e.g., `"R3JhcGhRTEpvYjoxMjM="`). These are provided in API responses and used for resource management
+- **Status Management**: The `enabled` attribute controls whether an alert responder is ACTIVE (true) or PAUSED (false)
+
+{{ .SchemaMarkdown | trimspace }}
