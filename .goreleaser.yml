@@ -1,0 +1,119 @@
+# GoReleaser configuration for TierZero Terraform Provider
+# This is used by GitHub Actions to build and release the provider
+# Documentation: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod tidy
+    # Run tests before building
+    - go test ./...
+
+builds:
+  - id: terraform-provider-tierzero
+    # Binary name must match the pattern: terraform-provider-{NAME}
+    binary: terraform-provider-tierzero_v{{ .Version }}
+
+    env:
+      - CGO_ENABLED=0
+
+    # Target platforms for Terraform provider
+    goos:
+      - darwin   # macOS
+      - linux
+      - windows
+
+    goarch:
+      - amd64    # x86_64
+      - arm64    # Apple Silicon, ARM servers
+      - arm      # 32-bit ARM
+
+    # Ignore certain platform combinations that aren't common
+    ignore:
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+
+    # Build flags
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+
+archives:
+  - id: terraform-provider-tierzero
+    format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    files:
+      # Include only the binary, no extra files
+      - none*
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      # Sign the checksum file with GPG
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
+release:
+  # GitHub release settings
+  github:
+    owner: tierzero
+    name: terraform-provider-tierzero
+
+  # Draft release first to allow manual review before publishing
+  draft: false
+
+  # Mark pre-releases (e.g., v1.0.0-rc1) as pre-release
+  prerelease: auto
+
+  # Release notes configuration
+  header: |
+    ## TierZero Terraform Provider {{ .Tag }}
+
+    See the [CHANGELOG](https://github.com/tierzero/terraform-provider-tierzero/blob/main/CHANGELOG.md) for detailed changes.
+
+  footer: |
+    **Full Changelog**: https://github.com/tierzero/terraform-provider-tierzero/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ## Installation
+
+    This release is automatically published to the [Terraform Registry](https://registry.terraform.io/providers/tierzero/tierzero).
+
+    To use this provider, add the following to your Terraform configuration:
+
+    ```hcl
+    terraform {
+      required_providers {
+        tierzero = {
+          source  = "tierzero/tierzero"
+          version = "~> {{ .Major }}.{{ .Minor }}"
+        }
+      }
+    }
+    ```
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'typo'
