@@ -17,7 +17,13 @@ Alert responders automatically investigate alerts matching specified criteria fr
 - **Matching Criteria**: Define text patterns that trigger automated investigation
 - **Runbook**: Customize investigation behavior with two types of prompts:
   - `prompt`: Main investigation directive for detailed root cause analysis. Use this to define the investigation steps, queries to run, and analysis approach. Default: "Please investigate the issue and explain the root cause to the best of your abilities!"
-  - `fast_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example: "Determine how many users were affected by the 500 error. Use the spans aggregation query using the filter: `env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500` and faceting on `@usr.id`."
+  - `fast_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example fast_prompt:
+    ```
+    Determine how many users were affected by the 500 error.
+    Use the spans aggregation query using the filter:
+    env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500
+    and facet on @usr.id.
+    ```
 - **Status**: Control whether the responder is ACTIVE (`enabled = true`) or PAUSED (`enabled = false`)
 
 For more runbook examples, see the [TierZero Prompt Library](https://docs.tierzero.ai/prompt-library/alert-responder).
