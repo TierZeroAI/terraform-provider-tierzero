@@ -16,7 +16,8 @@ type AlertResponder struct {
 	Name                       string                 `json:"name"`
 	Runbook                    *Runbook               `json:"runbook,omitempty"`
 	MatchingCriteria           *MatchingCriteria      `json:"matching_criteria"`
-	WebhookSources             []WebhookSource        `json:"webhook_sources"`
+	WebhookSources             []WebhookSource        `json:"webhook_sources,omitempty"`
+	SlackChannelID             *string                `json:"slack_channel_id,omitempty"`
 	NotificationIntegrationIDs []string               `json:"notification_integration_ids,omitempty"`
 	Status                     string                 `json:"status"`           // API field: "ACTIVE" or "PAUSED" (not exposed in Terraform schema)
 	CreatedAt                  string                 `json:"created_at,omitempty"`
@@ -32,7 +33,8 @@ type Runbook struct {
 
 // MatchingCriteria defines how alerts are matched
 type MatchingCriteria struct {
-	TextMatches []string `json:"text_matches"`
+	TextMatches         []string `json:"text_matches"`
+	SlackBotAppUserID   *string  `json:"slack_bot_app_user_id,omitempty"`
 }
 
 // WebhookSource represents a webhook configuration
@@ -45,7 +47,8 @@ type WebhookSource struct {
 type CreateAlertResponderRequest struct {
 	TeamName                   string                `json:"team_name"`
 	Name                       string                `json:"name"`
-	WebhookSources             []WebhookSource       `json:"webhook_sources"`
+	WebhookSources             []WebhookSource       `json:"webhook_sources,omitempty"`
+	SlackChannelID             *string               `json:"slack_channel_id,omitempty"`
 	MatchingCriteria           *MatchingCriteria     `json:"matching_criteria"`
 	Runbook                    *Runbook              `json:"runbook,omitempty"`
 	NotificationIntegrationIDs []string              `json:"notification_integration_ids,omitempty"`
@@ -56,6 +59,7 @@ type UpdateAlertResponderRequest struct {
 	Name                       *string               `json:"name,omitempty"`
 	MatchingCriteria           *MatchingCriteria     `json:"matching_criteria,omitempty"`
 	WebhookSources             []WebhookSource       `json:"webhook_sources,omitempty"`
+	SlackChannelID             *string               `json:"slack_channel_id,omitempty"`
 	Runbook                    *Runbook              `json:"runbook,omitempty"`
 	NotificationIntegrationIDs []string              `json:"notification_integration_ids,omitempty"`
 }

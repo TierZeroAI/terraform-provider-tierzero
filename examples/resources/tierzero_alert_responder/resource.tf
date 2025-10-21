@@ -11,18 +11,51 @@ provider "tierzero" {
   # base_url defaults to https://api.tierzero.ai
 }
 
-# Basic alert responder example
+# Webhook-based alert responder example (PagerDuty, OpsGenie, FireHydrant, Rootly)
 resource "tierzero_alert_responder" "production_critical" {
   team_name = "Default"
   name      = "Production Critical Errors"
 
   webhook_sources = [{
     type      = "OPSGENIE"
-    remote_id = "your-opsgenie-webhook-id"  # Replace with actual Opsgenie webhook ID
+    remote_id = "your-opsgenie-webhook-id"  # Replace with actual OpsGenie webhook ID
   }]
 
   matching_criteria = {
     text_matches = ["critical", "fatal", "emergency"]
+  }
+
+  enabled = true
+}
+
+# Slack-based alert responder example
+resource "tierzero_alert_responder" "slack_database_alerts" {
+  team_name = "Default"
+  name      = "Slack Database Alerts"
+
+  slack_channel_id = "C07TUN1EFFU"  # Slack channel ID (C for public, G for private)
+
+  matching_criteria = {
+    text_matches = ["database", "error", "timeout"]
+  }
+
+  enabled = true
+}
+
+# Slack alert responder with bot filter
+resource "tierzero_alert_responder" "slack_datadog_alerts" {
+  team_name = "Default"
+  name      = "Slack Datadog Alerts"
+
+  slack_channel_id = "C07TUN1EFFU"
+
+  matching_criteria = {
+    text_matches          = ["alert", "warning"]
+    slack_bot_app_user_id = "B01234567"  # Optional: filter by bot/sender app user ID
+  }
+
+  runbook = {
+    prompt = "Investigate this Datadog alert and provide root cause analysis"
   }
 
   enabled = true
