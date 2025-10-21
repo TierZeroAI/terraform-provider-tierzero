@@ -51,9 +51,11 @@ archives:
   - id: terraform-provider-tierzero
     format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    # By default, GoReleaser includes only the binary - no extra files needed
     files:
-      # Include only the binary, no extra files
-      - none*
+      - LICENSE*
+      - README*
+      - CHANGELOG*
 
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
