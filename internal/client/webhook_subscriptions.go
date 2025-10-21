@@ -9,7 +9,7 @@ import (
 
 // WebhookSubscription represents a webhook subscription available in the organization
 type WebhookSubscription struct {
-	Type     string `json:"type"`      // PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY, SLACK
+	Type     string `json:"type"`      // PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY
 	RemoteID string `json:"remote_id"` // External webhook ID
 	Name     string `json:"name"`      // Human-readable name
 }

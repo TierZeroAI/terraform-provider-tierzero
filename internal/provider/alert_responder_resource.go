@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -39,6 +40,7 @@ type alertResponderResourceModel struct {
 	TeamName                   types.String                   `tfsdk:"team_name"`
 	Name                       types.String                   `tfsdk:"name"`
 	WebhookSources             []webhookSourceModel           `tfsdk:"webhook_sources"`
+	SlackChannelID             types.String                   `tfsdk:"slack_channel_id"`
 	MatchingCriteria           *matchingCriteriaModel         `tfsdk:"matching_criteria"`
 	Runbook                    *runbookModel                  `tfsdk:"runbook"`
 	NotificationIntegrationIDs []types.String                 `tfsdk:"notification_integration_ids"`
@@ -54,7 +56,8 @@ type webhookSourceModel struct {
 }
 
 type matchingCriteriaModel struct {
-	TextMatches []types.String `tfsdk:"text_matches"`
+	TextMatches       []types.String `tfsdk:"text_matches"`
+	SlackBotAppUserID types.String   `tfsdk:"slack_bot_app_user_id"`
 }
 
 type runbookModel struct {
@@ -82,21 +85,27 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"team_name": schema.StringAttribute{
 				Description: "Team name",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Alert responder name",
 				Required:    true,
 			},
 			"webhook_sources": schema.ListNestedAttribute{
-				Description: "Webhook sources to monitor",
-				Required:    true,
+				Description: "Webhook sources to monitor (for PagerDuty, OpsGenie, FireHydrant, Rootly). Mutually exclusive with slack_channel_id. Changing this field requires resource replacement.",
+				Optional:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
-							Description: "Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY, SLACK)",
+							Description: "Webhook type (PAGERDUTY, OPSGENIE, FIREHYDRANT, ROOTLY)",
 							Required:    true,
 							Validators: []validator.String{
-								stringvalidator.OneOf("PAGERDUTY", "OPSGENIE", "FIREHYDRANT", "ROOTLY", "SLACK"),
+								stringvalidator.OneOf("PAGERDUTY", "OPSGENIE", "FIREHYDRANT", "ROOTLY"),
 							},
 						},
 						"remote_id": schema.StringAttribute{
@@ -104,6 +113,13 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 							Required:    true,
 						},
 					},
+				},
+			},
+			"slack_channel_id": schema.StringAttribute{
+				Description: "Slack channel ID (e.g., 'C01234567' for public channels, 'G01234567' for private channels). Mutually exclusive with webhook_sources. Changing this field requires resource replacement.",
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"matching_criteria": schema.SingleNestedAttribute{
@@ -114,6 +130,10 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Description: "Array of text patterns to match",
 						Required:    true,
 						ElementType: types.StringType,
+					},
+					"slack_bot_app_user_id": schema.StringAttribute{
+						Description: "Optional Slack bot/sender app user ID to filter messages (only for Slack alerts)",
+						Optional:    true,
 					},
 				},
 			},
@@ -184,12 +204,40 @@ func (r *alertResponderResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
+	// Validate that either webhook_sources OR slack_channel_id is provided (not both, not neither)
+	hasWebhookSources := len(plan.WebhookSources) > 0
+	hasSlackChannelID := !plan.SlackChannelID.IsNull() && !plan.SlackChannelID.IsUnknown() && plan.SlackChannelID.ValueString() != ""
+
+	if !hasWebhookSources && !hasSlackChannelID {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration",
+			"Must specify either webhook_sources or slack_channel_id",
+		)
+		return
+	}
+
+	if hasWebhookSources && hasSlackChannelID {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration",
+			"Cannot specify both webhook_sources and slack_channel_id. These are mutually exclusive.",
+		)
+		return
+	}
+
 	// Build the create request
 	createReq := &client.CreateAlertResponderRequest{
 		TeamName:         plan.TeamName.ValueString(),
 		Name:             plan.Name.ValueString(),
-		WebhookSources:   buildWebhookSources(plan.WebhookSources),
 		MatchingCriteria: buildMatchingCriteria(plan.MatchingCriteria),
+	}
+
+	// Set webhook_sources or slack_channel_id
+	if hasWebhookSources {
+		createReq.WebhookSources = buildWebhookSources(plan.WebhookSources)
+	}
+	if hasSlackChannelID {
+		slackChannelID := plan.SlackChannelID.ValueString()
+		createReq.SlackChannelID = &slackChannelID
 	}
 
 	if plan.Runbook != nil {
@@ -273,6 +321,14 @@ func (r *alertResponderResource) Read(ctx context.Context, req resource.ReadRequ
 	state.TeamName = types.StringValue(alertResponder.TeamName)
 	state.Name = types.StringValue(alertResponder.Name)
 	state.WebhookSources = mapWebhookSources(alertResponder.WebhookSources)
+
+	// Handle slack_channel_id
+	if alertResponder.SlackChannelID != nil && *alertResponder.SlackChannelID != "" {
+		state.SlackChannelID = types.StringValue(*alertResponder.SlackChannelID)
+	} else {
+		state.SlackChannelID = types.StringNull()
+	}
+
 	state.MatchingCriteria = mapMatchingCriteria(alertResponder.MatchingCriteria)
 	state.Runbook = mapRunbook(alertResponder.Runbook)
 	state.NotificationIntegrationIDs = mapStringList(alertResponder.NotificationIntegrationIDs)
@@ -301,6 +357,26 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 
 	id := state.ID.ValueString()
 
+	// Validate that either webhook_sources OR slack_channel_id is provided (not both, not neither)
+	hasWebhookSources := len(plan.WebhookSources) > 0
+	hasSlackChannelID := !plan.SlackChannelID.IsNull() && !plan.SlackChannelID.IsUnknown() && plan.SlackChannelID.ValueString() != ""
+
+	if !hasWebhookSources && !hasSlackChannelID {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration",
+			"Must specify either webhook_sources or slack_channel_id",
+		)
+		return
+	}
+
+	if hasWebhookSources && hasSlackChannelID {
+		resp.Diagnostics.AddError(
+			"Invalid Configuration",
+			"Cannot specify both webhook_sources and slack_channel_id. These are mutually exclusive.",
+		)
+		return
+	}
+
 	// Handle enabled field changes first
 	if !plan.Enabled.Equal(state.Enabled) {
 		if plan.Enabled.ValueBool() {
@@ -325,9 +401,8 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Check if other fields changed
+	// Note: team_name, webhook_sources, and slack_channel_id are not included because they have RequiresReplace() plan modifiers
 	needsUpdate := !plan.Name.Equal(state.Name) ||
-		!plan.TeamName.Equal(state.TeamName) ||
-		webhookSourcesChanged(plan.WebhookSources, state.WebhookSources) ||
 		matchingCriteriaChanged(plan.MatchingCriteria, state.MatchingCriteria) ||
 		runbookChanged(plan.Runbook, state.Runbook) ||
 		notificationIDsChanged(plan.NotificationIntegrationIDs, state.NotificationIntegrationIDs)
@@ -339,10 +414,6 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 		if !plan.Name.Equal(state.Name) {
 			name := plan.Name.ValueString()
 			updateReq.Name = &name
-		}
-
-		if webhookSourcesChanged(plan.WebhookSources, state.WebhookSources) {
-			updateReq.WebhookSources = buildWebhookSources(plan.WebhookSources)
 		}
 
 		if matchingCriteriaChanged(plan.MatchingCriteria, state.MatchingCriteria) {
@@ -434,9 +505,14 @@ func buildMatchingCriteria(mc *matchingCriteriaModel) *client.MatchingCriteria {
 	if mc == nil {
 		return nil
 	}
-	return &client.MatchingCriteria{
+	result := &client.MatchingCriteria{
 		TextMatches: buildStringList(mc.TextMatches),
 	}
+	if !mc.SlackBotAppUserID.IsNull() && !mc.SlackBotAppUserID.IsUnknown() && mc.SlackBotAppUserID.ValueString() != "" {
+		slackBotAppUserID := mc.SlackBotAppUserID.ValueString()
+		result.SlackBotAppUserID = &slackBotAppUserID
+	}
+	return result
 }
 
 func buildRunbook(rb *runbookModel) *client.Runbook {
@@ -450,9 +526,13 @@ func buildRunbook(rb *runbookModel) *client.Runbook {
 }
 
 func buildStringList(list []types.String) []string {
-	result := make([]string, len(list))
-	for i, s := range list {
-		result[i] = s.ValueString()
+	result := make([]string, 0, len(list))
+	for _, s := range list {
+		// Skip unknown or null values to prevent panics during planning
+		if s.IsNull() || s.IsUnknown() {
+			continue
+		}
+		result = append(result, s.ValueString())
 	}
 	return result
 }
@@ -474,9 +554,15 @@ func mapMatchingCriteria(mc *client.MatchingCriteria) *matchingCriteriaModel {
 	if mc == nil {
 		return nil
 	}
-	return &matchingCriteriaModel{
+	result := &matchingCriteriaModel{
 		TextMatches: mapStringList(mc.TextMatches),
 	}
+	if mc.SlackBotAppUserID != nil && *mc.SlackBotAppUserID != "" {
+		result.SlackBotAppUserID = types.StringValue(*mc.SlackBotAppUserID)
+	} else {
+		result.SlackBotAppUserID = types.StringNull()
+	}
+	return result
 }
 
 func mapRunbook(rb *client.Runbook) *runbookModel {
@@ -525,6 +611,9 @@ func matchingCriteriaChanged(plan, state *matchingCriteriaModel) bool {
 		if !plan.TextMatches[i].Equal(state.TextMatches[i]) {
 			return true
 		}
+	}
+	if !plan.SlackBotAppUserID.Equal(state.SlackBotAppUserID) {
+		return true
 	}
 	return false
 }
