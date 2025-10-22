@@ -19,6 +19,7 @@ const (
 type Client struct {
 	BaseURL    string
 	APIKey     string
+	UserAgent  string
 	HTTPClient *http.Client
 }
 
@@ -54,6 +55,9 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	req.Header.Set(apiKeyHeader, c.APIKey)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

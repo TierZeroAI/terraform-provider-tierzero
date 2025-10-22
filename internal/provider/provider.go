@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -94,6 +95,10 @@ func (p *TierZeroProvider) Configure(ctx context.Context, req provider.Configure
 
 	// Create client and make it available to resources and data sources
 	apiClient := client.NewClient(baseURL, apiKey)
+
+	// Set User-Agent header to identify Terraform provider requests
+	apiClient.UserAgent = fmt.Sprintf("terraform-provider-tierzero/%s (+https://www.terraform.io)", p.version)
+
 	resp.DataSourceData = apiClient
 	resp.ResourceData = apiClient
 }
