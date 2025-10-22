@@ -455,6 +455,7 @@ func (r *alertResponderResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Update state
+	plan.CreatedAt = types.StringValue(fullAlertResponder.CreatedAt)
 	plan.UpdatedAt = types.StringValue(fullAlertResponder.UpdatedAt)
 	plan.Enabled = types.BoolValue(fullAlertResponder.Status == "ACTIVE")
 

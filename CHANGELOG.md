@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2025-10-22
+
+### Added
+- Provider now sets custom User-Agent header (`terraform-provider-tierzero/<version>`) for all API requests to identify Terraform-managed resources
+
+### Fixed
+- Fixed `created_at` field not being properly set during alert responder updates, which caused "Provider returned invalid result object after apply" errors
+
 ## [0.0.4] - 2025-10-21
 
 ### Added
@@ -44,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resource and data source examples
 - Release process documentation
 
-[Unreleased]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/tierzero/terraform-provider-tierzero/releases/tag/v0.0.3
