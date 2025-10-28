@@ -74,7 +74,7 @@ resource "tierzero_alert_responder" "api_500_errors" {
   }
 
   runbook = {
-    prompt = <<-EOT
+    investigation_prompt = <<-EOT
       API requests are returning 500 errors. Investigate following these steps:
       1. Execute a spans query filtering for env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and group by @usr.id to quantify affected users
       2. Perform separate spans aggregations to determine impacted accounts (facet on @usr.accountId) and users
@@ -82,7 +82,7 @@ resource "tierzero_alert_responder" "api_500_errors" {
       4. If an error stack trace is identified with a version/git hash, investigate commits from up to 3 days prior. Flag potentially related commits as investigation leads
     EOT
 
-    fast_prompt = "Determine how many users were affected by the 500 errors. Use spans aggregation query with filter: env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and facet on @usr.id"
+    impact_and_severity_prompt = "Determine how many users were affected by the 500 errors. Use spans aggregation query with filter: env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and facet on @usr.id"
   }
 
   notification_integration_ids = [

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2025-10-28
+
+### Changed
+- **BREAKING**: Renamed runbook fields in `tierzero_alert_responder` resource to use more descriptive names:
+  - `prompt` → `investigation_prompt`: Main investigation prompt for detailed root cause analysis
+  - `fast_prompt` → `impact_and_severity_prompt`: Quick triage prompt for impact and severity assessment
+- Updated all documentation and examples to use new field names
+- Updated templates to reflect new field names
+
+### Migration Guide
+To migrate from 0.0.5 to 0.0.6, update your Terraform configuration:
+
+```hcl
+# Before (0.0.5)
+runbook = {
+  prompt      = "Investigate the issue..."
+  fast_prompt = "Assess impact..."
+}
+
+# After (0.0.6)
+runbook = {
+  investigation_prompt        = "Investigate the issue..."
+  impact_and_severity_prompt = "Assess impact..."
+}
+```
+
 ## [0.0.5] - 2025-10-22
 
 ### Added
@@ -52,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resource and data source examples
 - Release process documentation
 
-[Unreleased]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/tierzero/terraform-provider-tierzero/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/tierzero/terraform-provider-tierzero/releases/tag/v0.0.3

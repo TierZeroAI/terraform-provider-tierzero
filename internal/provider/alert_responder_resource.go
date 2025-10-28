@@ -61,8 +61,8 @@ type matchingCriteriaModel struct {
 }
 
 type runbookModel struct {
-	Prompt     types.String `tfsdk:"prompt"`
-	FastPrompt types.String `tfsdk:"fast_prompt"`
+	InvestigationPrompt     types.String `tfsdk:"investigation_prompt"`
+	ImpactAndSeverityPrompt types.String `tfsdk:"impact_and_severity_prompt"`
 }
 
 // Metadata returns the resource type name.
@@ -141,12 +141,12 @@ func (r *alertResponderResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Investigation runbook (optional, uses default if not provided)",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"prompt": schema.StringAttribute{
+					"investigation_prompt": schema.StringAttribute{
 						Description: "Main investigation prompt",
 						Optional:    true,
 					},
-					"fast_prompt": schema.StringAttribute{
-						Description: "Quick triage prompt",
+					"impact_and_severity_prompt": schema.StringAttribute{
+						Description: "Quick triage prompt for impact and severity analysis",
 						Optional:    true,
 					},
 				},
@@ -521,8 +521,8 @@ func buildRunbook(rb *runbookModel) *client.Runbook {
 		return nil
 	}
 	return &client.Runbook{
-		Prompt:     rb.Prompt.ValueString(),
-		FastPrompt: rb.FastPrompt.ValueString(),
+		InvestigationPrompt:     rb.InvestigationPrompt.ValueString(),
+		ImpactAndSeverityPrompt: rb.ImpactAndSeverityPrompt.ValueString(),
 	}
 }
 
@@ -571,8 +571,8 @@ func mapRunbook(rb *client.Runbook) *runbookModel {
 		return nil
 	}
 	return &runbookModel{
-		Prompt:     types.StringValue(rb.Prompt),
-		FastPrompt: types.StringValue(rb.FastPrompt),
+		InvestigationPrompt:     types.StringValue(rb.InvestigationPrompt),
+		ImpactAndSeverityPrompt: types.StringValue(rb.ImpactAndSeverityPrompt),
 	}
 }
 
@@ -626,7 +626,7 @@ func runbookChanged(plan, state *runbookModel) bool {
 	if plan == nil {
 		return false
 	}
-	return !plan.Prompt.Equal(state.Prompt) || !plan.FastPrompt.Equal(state.FastPrompt)
+	return !plan.InvestigationPrompt.Equal(state.InvestigationPrompt) || !plan.ImpactAndSeverityPrompt.Equal(state.ImpactAndSeverityPrompt)
 }
 
 func notificationIDsChanged(plan, state []types.String) bool {
