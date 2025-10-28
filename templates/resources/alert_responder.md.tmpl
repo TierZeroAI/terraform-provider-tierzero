@@ -16,8 +16,8 @@ Alert responders automatically investigate alerts matching specified criteria fr
 - **Webhook Sources**: Configure which monitoring platforms (PagerDuty, Opsgenie, FireHydrant, Rootly, Slack) to monitor for alerts
 - **Matching Criteria**: Define text patterns that trigger automated investigation
 - **Runbook**: Customize investigation behavior with two types of prompts:
-  - `prompt`: Main investigation directive for detailed root cause analysis. Use this to define the investigation steps, queries to run, and analysis approach. Default: "Please investigate the issue and explain the root cause to the best of your abilities!"
-  - `fast_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example fast_prompt:
+  - `investigation_prompt`: Main investigation directive for detailed root cause analysis. Use this to define the investigation steps, queries to run, and analysis approach. Default: "Please investigate the issue and explain the root cause to the best of your abilities!"
+  - `impact_and_severity_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example impact_and_severity_prompt:
     ```
     Determine how many users were affected by the 500 error.
     Use the spans aggregation query using the filter:

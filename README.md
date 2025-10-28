@@ -18,7 +18,7 @@ terraform {
   required_providers {
     tierzero = {
       source  = "tierzeroai/tierzero"
-      version = "~> 1.0"
+      version = "~> 0.0.6"
     }
   }
 }
@@ -52,18 +52,18 @@ resource "tierzero_alert_responder" "production_critical" {
   team_name = "Production"
   name      = "Critical Error Handler"
 
-  webhook_sources {
+  webhook_sources = [{
     type      = "PAGERDUTY"
     remote_id = "PXXXXXX"
-  }
+  }]
 
-  matching_criteria {
+  matching_criteria = {
     text_matches = ["critical", "fatal"]
   }
 
-  runbook {
-    prompt      = "Investigate and provide root cause analysis"
-    fast_prompt = "Quick triage: assess severity and impact"
+  runbook = {
+    investigation_prompt        = "Investigate and provide root cause analysis"
+    impact_and_severity_prompt = "Quick triage: assess severity and impact"
   }
 
   enabled = true

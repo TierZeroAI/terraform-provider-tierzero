@@ -27,8 +27,8 @@ type AlertResponder struct {
 
 // Runbook contains investigation prompts
 type Runbook struct {
-	Prompt     string `json:"prompt,omitempty"`
-	FastPrompt string `json:"fast_prompt,omitempty"`
+	InvestigationPrompt      string `json:"investigation_prompt,omitempty"`
+	ImpactAndSeverityPrompt  string `json:"impact_and_severity_prompt,omitempty"`
 }
 
 // MatchingCriteria defines how alerts are matched

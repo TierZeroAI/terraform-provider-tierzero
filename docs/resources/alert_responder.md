@@ -18,8 +18,8 @@ Alert responders automatically investigate alerts matching specified criteria fr
   - **Slack-based**: Monitor Slack channel messages directly (requires slack_channel_id instead of webhook_sources)
 - **Matching Criteria**: Define text patterns that trigger automated investigation. For Slack alerts, optionally filter by bot/sender using `slack_bot_app_user_id`
 - **Runbook**: Customize investigation behavior with two types of prompts:
-  - `prompt`: Main investigation directive for detailed root cause analysis. Use this to define the investigation steps, queries to run, and analysis approach. Default: "Please investigate the issue and explain the root cause to the best of your abilities!"
-  - `fast_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example fast_prompt:
+  - `investigation_prompt`: Main investigation directive for detailed root cause analysis. Use this to define the investigation steps, queries to run, and analysis approach. Default: "Please investigate the issue and explain the root cause to the best of your abilities!"
+  - `impact_and_severity_prompt`: Quick triage directive for rapid severity and impact assessment. Use this to quickly determine how many users or accounts are affected. Example impact_and_severity_prompt:
     ```
     Determine how many users were affected by the 500 error.
     Use the spans aggregation query using the filter:
@@ -109,7 +109,7 @@ resource "tierzero_alert_responder" "api_500_errors" {
   }
 
   runbook = {
-    prompt = <<-EOT
+    investigation_prompt = <<-EOT
       API requests are returning 500 errors. Investigate following these steps:
       1. Execute a spans query filtering for env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and group by @usr.id to quantify affected users
       2. Perform separate spans aggregations to determine impacted accounts (facet on @usr.accountId) and users
@@ -117,7 +117,7 @@ resource "tierzero_alert_responder" "api_500_errors" {
       4. If an error stack trace is identified with a version/git hash, investigate commits from up to 3 days prior. Flag potentially related commits as investigation leads
     EOT
 
-    fast_prompt = "Determine how many users were affected by the 500 errors. Use spans aggregation query with filter: env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and facet on @usr.id"
+    impact_and_severity_prompt = "Determine how many users were affected by the 500 errors. Use spans aggregation query with filter: env:prod @http.method:<HTTP_METHOD> @http.route:* @http.status_code:500 and facet on @usr.id"
   }
 
   notification_integration_ids = [
@@ -214,8 +214,8 @@ Required:
 
 Optional:
 
-- `fast_prompt` (String) Quick triage prompt
-- `prompt` (String) Main investigation prompt
+- `impact_and_severity_prompt` (String) Quick triage prompt for impact and severity analysis
+- `investigation_prompt` (String) Main investigation prompt
 
 ## Import
 
